@@ -59,7 +59,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    private int totalPrice;
+    private long totalPrice;
     private String note;
 
     private LocalDateTime deliveryDateTime;

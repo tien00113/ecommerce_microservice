@@ -13,7 +13,7 @@ public class JwtUtil {
     public void validateToken(final String token) {
         try {
             Claims claims = Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody();
-            System.out.println("Claims: " + claims);
+            System.out.println("Claims: " + claims.get("userId"));
         } catch (Exception e) {
             System.out.println("Token validation failed: " + e.getMessage());
             // throw e;

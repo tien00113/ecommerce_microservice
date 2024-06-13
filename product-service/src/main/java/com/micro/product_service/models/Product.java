@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,6 +14,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapKeyColumn;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,11 +31,16 @@ public class Product {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
     private String name;
     private String description;
     private Long stock;
     private String sizes;
     private Boolean active;
+    private Long price;
 
     @ElementCollection
     @MapKeyColumn(name = "color")
@@ -59,5 +66,12 @@ public class Product {
 
     public Map<String, String> getImageColorMap() {
         return new HashMap<>(this.imageColorMap);
+    }
+
+    public void setCategoryId(Long categoryId) {
+        if (category == null) {
+            category = new Category();
+        }
+        category.setId(categoryId);
     }
 }

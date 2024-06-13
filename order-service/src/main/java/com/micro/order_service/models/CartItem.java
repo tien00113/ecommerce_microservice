@@ -22,7 +22,7 @@ public class CartItem {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long prodcutId;
+    private Long productId;
 
     private Long userId;
 
@@ -32,7 +32,7 @@ public class CartItem {
     private Cart cart;
 
     private int quantity;
-    private int price;
+    private long price;
 
     private String color;
     private String size;

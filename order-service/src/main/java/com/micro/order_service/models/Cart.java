@@ -32,5 +32,5 @@ public class Cart {
     private Long userId;
 
     private int totalItem;
-    private int totalPrice;
+    private long totalPrice;
 }

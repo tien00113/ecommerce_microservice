@@ -54,5 +54,13 @@ public class CustomerUserService implements UserDetailsService{
 
         return new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
     }
+
+    public Long getUserId(String username) {
+        User user = userRepository.findByEmail(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("User not found with email: " + username);
+        }
+        return user.getId();
+    }
     
 }

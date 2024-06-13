@@ -26,7 +26,7 @@ public class OrderItem {
 
     private Long productId;
 
-    private int price;
+    private long price;
     private int quantity;
 
     private String color;

@@ -1,8 +1,8 @@
 package com.micro.product_service.mapper;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 import com.micro.product_service.dto.ImageColorDTO;
@@ -20,14 +20,17 @@ public class ProductMapper {
                 .collect(Collectors.toList());
 
         return new ProductDTO(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getStock(),
-                product.getSizes(),
-                product.getActive(),
-                images
+            product.getId(),
+            product.getCategory().getId(),
+            product.getName(),
+            product.getDescription(),
+            product.getStock(),
+            product.getSizes(),
+            product.getActive(),
+            product.getPrice(),
+            images
         );
+
     }
 
     public static Product toEntity(ProductDTO productDTO) {
@@ -42,11 +45,13 @@ public class ProductMapper {
 
         Product product = new Product();
         product.setId(productDTO.getId());
+        // product.setCategory(productDTO.getCategory());
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
         product.setStock(productDTO.getStock());
         product.setSizes(productDTO.getSizes());
         product.setActive(productDTO.getActive());
+        product.setPrice(productDTO.getPrice());
         product.setImageColorMap(imageColorMap);
 
         return product;

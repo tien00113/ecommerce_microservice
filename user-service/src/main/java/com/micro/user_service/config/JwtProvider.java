@@ -19,7 +19,7 @@ import io.jsonwebtoken.security.Keys;
 public class JwtProvider {
     static SecretKey key = Keys.hmacShaKeyFor(JwtConst.SECRET_KEY.getBytes());
 
-    public static String generateToken(Authentication auth) {
+    public static String generateToken(Authentication auth, Long userId) {
         List<String> roles = auth.getAuthorities().stream().map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
@@ -28,6 +28,7 @@ public class JwtProvider {
                 .setExpiration(new Date(new Date().getTime() + 86400000))
                 .claim("email", auth.getName())
                 .claim("authorities", roles)
+                .claim("userId", userId)
                 .signWith(key)
                 .compact();
     }

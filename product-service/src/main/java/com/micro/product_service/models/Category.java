@@ -25,7 +25,9 @@ public class Category {
 
     private int level;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private Category parentCategory;
+    // @ManyToOne
+    // @JoinColumn(name = "parent_id")
+    // private Category parentCategory;
+
+    private Long parentId;
 }

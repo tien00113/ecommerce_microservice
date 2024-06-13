@@ -4,7 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.micro.user_service.config.JwtProvider;
-import com.micro.user_service.models.User;
+import com.micro.user_service.dto.UserDTO;
+import com.micro.user_service.mapper.UserMapper;
 import com.micro.user_service.repository.UserRepository;
 import com.micro.user_service.service.UserService;
 
@@ -15,10 +16,10 @@ public class UserServiceImplement implements UserService{
 
 
     @Override
-    public User getUserProfile(String jwt) {
+    public UserDTO getUserProfile(String jwt) {
         String email = JwtProvider.getEmailFromJwtToken(jwt);
 
-        return userRepository.findByEmail(email);
+        return UserMapper.toDTO(userRepository.findByEmail(email));
     }
     
 }

@@ -1,8 +1,8 @@
 package com.micro.user_service.service;
 
-import com.micro.user_service.models.User;
+import com.micro.user_service.dto.UserDTO;
 
 public interface UserService {
     
-    public User getUserProfile(String jwt);
+    public UserDTO getUserProfile(String jwt);
 }

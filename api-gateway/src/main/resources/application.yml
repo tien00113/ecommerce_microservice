@@ -14,18 +14,21 @@ spring:
         - id: PRODUCT-SERVICE
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path= /product/**
+            - Path= /private/**, /public/**
           filters:
           - AuthenFilter
-
         - id: ORDER-SERVICE
           uri: lb://ORDER-SERVICE
           predicates:
-          - Path= /order/**
+          - Path= /privateorder/**, /publicorder/**, /order/**
+          filters:
+          - AuthenFilter
         - id: PAYMENT-SERVICE
           uri: lb://PAYMENT-SERVICE
           predicates:
           - Path= /payment/**
+          filters:
+          - AuthenFilter
         - id: NOTIFICATION-SERVICE
           uri: lb://NOTIFICATION-SERVICE
           predicates:
