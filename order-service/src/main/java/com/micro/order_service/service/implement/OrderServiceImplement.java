@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.micro.order_service.models.Cart;
 import com.micro.order_service.models.CartItem;
@@ -17,6 +18,8 @@ import com.micro.order_service.repository.OrderItemRepository;
 import com.micro.order_service.repository.OrderRepository;
 import com.micro.order_service.request.OrderRequest;
 import com.micro.order_service.service.OrderService;
+import com.micro.order_service.service.client.ProductClient;
+import com.micro.order_service.service.kafka.producer.OrderProducer;
 
 @Service
 public class OrderServiceImplement implements OrderService{
@@ -30,7 +33,14 @@ public class OrderServiceImplement implements OrderService{
     @Autowired
     private OrderItemRepository orderItemRepository;
 
+    @Autowired
+    private ProductClient productClient;
+
+    @Autowired
+    private OrderProducer orderProducer;
+
     @Override
+    @Transactional
     public Order createOrder(OrderRequest orderRequest, Long userId) {
         Cart cart = cartRepository.findByUserId(userId);
 
@@ -58,6 +68,7 @@ public class OrderServiceImplement implements OrderService{
         createOrder.setTotalPrice(cart.getTotalPrice());
         createOrder.setNote(orderRequest.getNote());
         createOrder.setAddress(orderRequest.getAddress());
+        createOrder.setPhoneNumber(orderRequest.getPhoneNumber());
         createOrder.setStatus(OrderStatus.PLACED);
         createOrder.setCreateAt(LocalDateTime.now());
         createOrder.setUpdateStatusAt(LocalDateTime.now());
@@ -69,6 +80,13 @@ public class OrderServiceImplement implements OrderService{
 
             orderItemRepository.save(orderItem);
         }
+        orderProducer.sendOrderEvent(savedOrder);
+
+
+        cart.getCartItems().clear();
+        cart.setTotalPrice(0);
+        cart.setTotalItem(0);
+        cartRepository.save(cart);
 
         return savedOrder;
     }

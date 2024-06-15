@@ -5,8 +5,11 @@ import org.springframework.web.bind.annotation.RestController;
 import com.micro.product_service.dto.ProductDTO;
 import com.micro.product_service.mapper.ProductMapper;
 import com.micro.product_service.models.Product;
+import com.micro.product_service.models.ProductVariant;
 import com.micro.product_service.request.ProductFilterRequest;
 import com.micro.product_service.service.ProductService;
+
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,10 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 public class ProductController {
@@ -37,6 +42,12 @@ public class ProductController {
         return new ResponseEntity<ProductDTO>(ProductMapper.toDTO(productService.findProductById(productId)),
                 HttpStatus.OK);
     }
+
+    @GetMapping("/public/product/variant/{productVariantId}")
+    public ResponseEntity<ProductVariant> getProductVariant(@PathVariable Long productVariantId) throws Exception{
+        
+        return new ResponseEntity<ProductVariant>(productService.findProductVariant(productVariantId), HttpStatus.OK);
+    } 
 
     @PostMapping("/private/product")
     public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
@@ -63,6 +74,30 @@ public class ProductController {
         String message = productService.deleteProduct(id);
 
         return new ResponseEntity<String>(message, HttpStatus.OK);
+    }
+
+    @PutMapping("private/product/{productId}/variants")
+    public ResponseEntity<List<ProductVariant>> updateProductVariants(
+            @PathVariable Long productId,
+            @RequestBody List<ProductVariant> productVariants) {
+        try {
+            List<ProductVariant> updatedVariants = productService.updateProuductVariants(productId, productVariants);
+            return ResponseEntity.ok(updatedVariants);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @PatchMapping("public/product/variants/{variantId}/quantity")
+    public ResponseEntity<Void> updateProductQuantity(
+            @PathVariable Long variantId,
+            @RequestParam Long quantity) {
+        try {
+            productService.updateProductQuantity(variantId, quantity);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @PostMapping("/public/test")

@@ -54,10 +54,9 @@ public class CategoryController {
         return message;
     }
 
-    @GetMapping("getcategory/{categoryId}")
+    @GetMapping("/public/getcategory/{categoryId}")
     public ResponseEntity<Category> getCategoryDetail(@PathVariable Long categoryId) throws Exception{
         return ResponseEntity.ok(categoryService.findCategoryById(categoryId));
     }
-
 
 }

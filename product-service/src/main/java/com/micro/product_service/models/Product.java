@@ -1,77 +1,47 @@
-package com.micro.product_service.models;
+    package com.micro.product_service.models;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+    import java.util.List;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapKeyColumn;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+    import jakarta.persistence.CascadeType;
+    import jakarta.persistence.Entity;
+    import jakarta.persistence.GeneratedValue;
+    import jakarta.persistence.GenerationType;
+    import jakarta.persistence.Id;
+    import jakarta.persistence.JoinColumn;
+    import jakarta.persistence.ManyToOne;
+    import jakarta.persistence.OneToMany;
+    import lombok.AllArgsConstructor;
+    import lombok.Getter;
+    import lombok.NoArgsConstructor;
+    import lombok.Setter;
 
-@Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-public class Product {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Entity
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class Product {
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "category_id")
-    private Category category;
+        @ManyToOne(cascade = CascadeType.ALL)
+        @JoinColumn(name = "category_id")
+        private Category category;
 
-    private String name;
-    private String description;
-    private Long stock;
-    private String sizes;
-    private Boolean active;
-    private Long price;
+        private String name;
+        private String description;
+        private long stock;
+        private Boolean active;
+        private long price;
 
-    @ElementCollection
-    @MapKeyColumn(name = "color")
-    @Column(name = "image_url")
-    @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
-    private Map<String, String> imageColorMap = new HashMap<>();
+        @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+        private List<ProductVariant> variants;
 
-    public void addImageColor(String color, String imageUrl) {
-        this.imageColorMap.put(color, imageUrl);
-    }
-
-    public String getImageByColor(String color) {
-        return this.imageColorMap.get(color);
-    }
-
-    public List<String> getColorList() {
-        return this.imageColorMap.keySet().stream().collect(Collectors.toList());
-    }
-
-    public List<String> getImageList() {
-        return this.imageColorMap.values().stream().collect(Collectors.toList());
-    }
-
-    public Map<String, String> getImageColorMap() {
-        return new HashMap<>(this.imageColorMap);
-    }
-
-    public void setCategoryId(Long categoryId) {
-        if (category == null) {
-            category = new Category();
+        public void setCategoryId(Long categoryId) {
+            if (category == null) {
+                category = new Category();
+            }
+            category.setId(categoryId);
         }
-        category.setId(categoryId);
     }
-}

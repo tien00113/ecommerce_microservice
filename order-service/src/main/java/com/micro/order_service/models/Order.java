@@ -52,6 +52,7 @@ public class Order {
     }
 
     private String address;
+    private String phoneNumber;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();

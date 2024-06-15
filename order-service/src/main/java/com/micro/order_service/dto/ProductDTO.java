@@ -14,21 +14,26 @@ public class ProductDTO {
     private Long categoryId;
     private String name;
     private String description;
-    private Long stock;
-    private String sizes;
+    private long stock;
+    private List<String> sizes;
+    private List<String> colors;
     private Boolean active;
-    private Long price;
-    private List<ImageColorDTO> images;
+    private long price;
+    private List<ProductVariantDTO> variants;
+    // private List<ImageColorDTO> images;
 
-    public ProductDTO(Long id, Long categoryId, String name, String description, Long stock, String sizes, Boolean active, Long price, List<ImageColorDTO> images) {
+    public ProductDTO(Long id, Long categoryId, String name, String description, long stock, List<String> sizes, List<String> colors, Boolean active, long price, List<ProductVariantDTO> variantDTOList) {
         this.id = id;
         this.categoryId = categoryId;
         this.name = name;
         this.description = description;
         this.stock = stock;
         this.sizes = sizes;
+        this.colors = colors;
         this.active = active;
         this.price = price;
-        this.images = images;
+        this.variants = variantDTOList;
+        // this.images = images;
     }
+
 }

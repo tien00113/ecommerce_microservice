@@ -1,14 +1,9 @@
 package com.micro.order_service.service.implement;
 
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
-import com.micro.order_service.config.Urls;
 import com.micro.order_service.dto.ProductDTO;
 import com.micro.order_service.models.Cart;
 import com.micro.order_service.models.CartItem;
@@ -20,9 +15,6 @@ import com.micro.order_service.service.client.ProductClient;
 
 @Service
 public class CartItemServiceImplement implements CartItemService {
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     @Autowired
     private CartRepository cartRepository;
@@ -40,8 +32,6 @@ public class CartItemServiceImplement implements CartItemService {
         ProductDTO product = productClient.getProduct(cartItemRequest.getProductId());
 
         if (product != null) {
-            System.out.println("---------------------------" + product);
-
             Cart existCart = cartRepository.findByUserId(userId);
 
             if (existCart == null) {
@@ -114,7 +104,7 @@ public class CartItemServiceImplement implements CartItemService {
             cartItemRepository.delete(cartItem);
 
             return null;
-        } 
+        }
     }
 
 }

@@ -1,59 +1,101 @@
 package com.micro.product_service.mapper;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.micro.product_service.dto.ImageColorDTO;
 import com.micro.product_service.dto.ProductDTO;
+import com.micro.product_service.dto.ProductVariantDTO;
 import com.micro.product_service.models.Product;
+import com.micro.product_service.models.ProductVariant;
 
 public class ProductMapper {
+
     public static ProductDTO toDTO(Product product) {
         if (product == null) {
             return null;
         }
-        
-        List<ImageColorDTO> images = product.getImageColorMap().entrySet().stream()
-                .map(entry -> new ImageColorDTO(entry.getKey(), entry.getValue()))
+
+        List<String> sizes = product.getVariants().stream()
+                .map(ProductVariant::getSize)
+                .distinct()
                 .collect(Collectors.toList());
 
-        return new ProductDTO(
-            product.getId(),
-            product.getCategory().getId(),
-            product.getName(),
-            product.getDescription(),
-            product.getStock(),
-            product.getSizes(),
-            product.getActive(),
-            product.getPrice(),
-            images
-        );
+        List<String> colors = product.getVariants().stream()
+                .map(ProductVariant::getColor)
+                .distinct()
+                .collect(Collectors.toList());
 
+        long stock = product.getVariants().stream()
+                .mapToLong(ProductVariant::getQuantity)
+                .sum();
+
+        List<ProductVariantDTO> variantsDTO = toVariantDTOList(product.getVariants());
+
+        return new ProductDTO(
+                product.getId(),
+                product.getCategory().getId(),
+                product.getName(),
+                product.getDescription(),
+                stock,
+                sizes,
+                colors,
+                product.getActive(),
+                product.getPrice(),
+                variantsDTO);
     }
 
     public static Product toEntity(ProductDTO productDTO) {
         if (productDTO == null) {
             return null;
         }
-        
-        Map<String, String> imageColorMap = new HashMap<>();
-        for (ImageColorDTO imageColor : productDTO.getImages()) {
-            imageColorMap.put(imageColor.getColor(), imageColor.getImageUrl());
-        }
 
         Product product = new Product();
+
         product.setId(productDTO.getId());
-        // product.setCategory(productDTO.getCategory());
+        // set Category
+        product.setStock(productDTO.getStock());
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
-        product.setStock(productDTO.getStock());
-        product.setSizes(productDTO.getSizes());
         product.setActive(productDTO.getActive());
         product.setPrice(productDTO.getPrice());
-        product.setImageColorMap(imageColorMap);
+
+        List<ProductVariant> variants = toVariantEntityList(productDTO.getVariants(), product);
+
+        product.setVariants(variants);
 
         return product;
+    }
+
+    private static List<ProductVariant> toVariantEntityList(List<ProductVariantDTO> variantDTOs, Product product) {
+        if (variantDTOs == null) {
+            return null;
+        }
+
+        return variantDTOs.stream()
+                .map(dto -> {
+                    ProductVariant variant = new ProductVariant();
+                    variant.setColor(dto.getColor());
+                    variant.setSize(dto.getSize());
+                    variant.setQuantity(dto.getQuantity());
+                    variant.setImageUrl(dto.getImageUrl());
+                    variant.setProduct(product);
+                    return variant;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static List<ProductVariantDTO> toVariantDTOList(List<ProductVariant> variants) {
+        if (variants == null) {
+            return null;
+        }
+
+        return variants.stream()
+                .map(variant -> new ProductVariantDTO(
+                        variant.getId(),
+                        variant.getColor(),
+                        variant.getSize(),
+                        variant.getQuantity(),
+                        variant.getImageUrl()))
+                .collect(Collectors.toList());
     }
 }
