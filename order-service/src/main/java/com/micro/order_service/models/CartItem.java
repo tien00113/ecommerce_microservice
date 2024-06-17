@@ -33,8 +33,4 @@ public class CartItem {
 
     private int quantity;
     private long price;
-
-    private String color;
-    private String size;
-
 }

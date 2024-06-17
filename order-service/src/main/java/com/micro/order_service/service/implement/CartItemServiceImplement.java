@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.micro.order_service.dto.ProductDTO;
+import com.micro.order_service.dto.ProductVariantDTO;
 import com.micro.order_service.models.Cart;
 import com.micro.order_service.models.CartItem;
 import com.micro.order_service.repository.CartItemRepository;
@@ -29,7 +30,11 @@ public class CartItemServiceImplement implements CartItemService {
     @Transactional
     public CartItem addToCart(Long userId, CartItemRequest cartItemRequest) throws Exception {
 
-        ProductDTO product = productClient.getProduct(cartItemRequest.getProductId());
+        //update service ProductDTO -> ProductVariant.
+        //////////////////////////////////////////
+
+        // ProductDTO product = productClient.getProduct(cartItemRequest.getProductId());
+        ProductVariantDTO product = productClient.getProductVariant(cartItemRequest.getProductId());
 
         if (product != null) {
             Cart existCart = cartRepository.findByUserId(userId);
@@ -41,8 +46,10 @@ public class CartItemServiceImplement implements CartItemService {
                 existCart = cartRepository.save(existCart);
             }
 
-            CartItem existingItem = cartItemRepository.findByCartAndProductIdAndColorAndSizeAndUserId(existCart,
-                    product.getId(), cartItemRequest.getColor(), cartItemRequest.getSize(), userId);
+            // CartItem existingItem = cartItemRepository.findByCartAndProductIdAndColorAndSizeAndUserId(existCart,
+            //         product.getId(), cartItemRequest.getColor(), cartItemRequest.getSize(), userId);
+            CartItem existingItem = cartItemRepository.findByProductId(cartItemRequest.getProductId());
+
             if (existingItem != null) {
                 existingItem.setQuantity(existingItem.getQuantity() + cartItemRequest.getQuantity());
                 existingItem.setPrice(product.getPrice() * existingItem.getQuantity());
@@ -60,8 +67,6 @@ public class CartItemServiceImplement implements CartItemService {
                 newItem.setProductId(product.getId());
                 newItem.setCart(existCart);
                 newItem.setQuantity(cartItemRequest.getQuantity());
-                newItem.setColor(cartItemRequest.getColor());
-                newItem.setSize(cartItemRequest.getSize());
                 newItem.setPrice(product.getPrice() * newItem.getQuantity());
                 newItem.setUserId(userId);
 

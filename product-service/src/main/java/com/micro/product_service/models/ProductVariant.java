@@ -30,7 +30,8 @@ public class ProductVariant {
 
     private String color;
     private String size;
-    private Long quantity;
+    private long price;
+    private int quantity;
     private String imageUrl;
     
 }

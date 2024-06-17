@@ -15,4 +15,5 @@ public class ProductVariantDTO {
     private String size;
     private Long quantity;
     private String imageUrl;
+    private long price;
 }

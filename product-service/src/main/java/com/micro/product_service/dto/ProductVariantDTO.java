@@ -13,6 +13,7 @@ public class ProductVariantDTO {
     private Long id;
     private String color;
     private String size;
-    private Long quantity;
+    private int quantity;
     private String imageUrl;
+    private long price;
 }

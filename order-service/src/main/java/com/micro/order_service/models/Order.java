@@ -60,6 +60,12 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private OrderStatus stockStatus;
+
+    @Enumerated(EnumType.STRING)
+    private OrderStatus paymentStatus;
+
     private long totalPrice;
     private String note;
 
@@ -69,10 +75,9 @@ public class Order {
     private LocalDateTime updateStatusAt;
 
     public enum OrderStatus {
-        PLACED, // Đơn hàng đang chờ xử lý
-        CONFIRMED, // Đơn hàng đã được xác nhận
-        SHIPPED, // Đơn hàng đã được gửi đi
-        DELIVERED, // Đơn hàng đã được giao
-        CANCELLED // Đơn hàng đã hủy
+        NEW,
+        SUCCESS,
+        FAILED,
+        ROLLBACK
     }
 }

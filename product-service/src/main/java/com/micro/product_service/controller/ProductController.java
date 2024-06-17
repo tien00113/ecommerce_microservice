@@ -91,7 +91,7 @@ public class ProductController {
     @PatchMapping("public/product/variants/{variantId}/quantity")
     public ResponseEntity<Void> updateProductQuantity(
             @PathVariable Long variantId,
-            @RequestParam Long quantity) {
+            @RequestParam int quantity) {
         try {
             productService.updateProductQuantity(variantId, quantity);
             return ResponseEntity.ok().build();

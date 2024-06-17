@@ -73,6 +73,16 @@
             "projectName": "payment-service",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-CommonApplication<common>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.micro.common.CommonApplication",
+            "projectName": "common",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
         }
     ]
 }

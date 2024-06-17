@@ -15,9 +15,13 @@ public interface ProductService {
 
     public Product updateProduct(Product product) throws Exception;
 
+    public void checkProductQuantity(Long variantId, int quantity) throws Exception;
+
+    public void rollbackQuantity(Long variantId, int quantity) throws Exception;
+
     public List<ProductVariant> updateProuductVariants(Long productId, List<ProductVariant> productVariants) throws Exception;
 
-    public void updateProductQuantity(Long variantId, Long quantity) throws Exception;
+    public void updateProductQuantity(Long variantId, int quantity) throws Exception;
     
     public String deleteProduct(Long productId);
 

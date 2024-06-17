@@ -29,7 +29,7 @@ public class ProductMapper {
                 .mapToLong(ProductVariant::getQuantity)
                 .sum();
 
-        List<ProductVariantDTO> variantsDTO = toVariantDTOList(product.getVariants());
+        List<ProductVariantDTO> variantsDTO = toVariantDTOList(product.getVariants(), product.getPrice());
 
         return new ProductDTO(
                 product.getId(),
@@ -78,13 +78,14 @@ public class ProductMapper {
                     variant.setSize(dto.getSize());
                     variant.setQuantity(dto.getQuantity());
                     variant.setImageUrl(dto.getImageUrl());
+                    variant.setPrice(product.getPrice());
                     variant.setProduct(product);
                     return variant;
                 })
                 .collect(Collectors.toList());
     }
 
-    private static List<ProductVariantDTO> toVariantDTOList(List<ProductVariant> variants) {
+    private static List<ProductVariantDTO> toVariantDTOList(List<ProductVariant> variants, long productPrice) {
         if (variants == null) {
             return null;
         }
@@ -95,7 +96,8 @@ public class ProductMapper {
                         variant.getColor(),
                         variant.getSize(),
                         variant.getQuantity(),
-                        variant.getImageUrl()))
+                        variant.getImageUrl(),
+                        productPrice))
                 .collect(Collectors.toList());
     }
 }

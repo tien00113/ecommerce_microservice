@@ -20,10 +20,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class AppConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {    
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(Authorize -> Authorize
-                        .anyRequest().permitAll())  
+                        .anyRequest().permitAll())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
@@ -41,4 +41,5 @@ public class AppConfig {
     public WebClient.Builder webClientBuilder() {
         return WebClient.builder();
     }
+
 }

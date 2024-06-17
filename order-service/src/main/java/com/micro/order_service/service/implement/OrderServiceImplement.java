@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.micro.order_service.exception.OrderException;
 import com.micro.order_service.models.Cart;
 import com.micro.order_service.models.CartItem;
 import com.micro.order_service.models.Order;
@@ -49,8 +50,6 @@ public class OrderServiceImplement implements OrderService{
         for (CartItem cartItem : cart.getCartItems()) {
             OrderItem orderItem = new OrderItem();
 
-            orderItem.setColor(cartItem.getColor());
-            orderItem.setSize(cartItem.getSize());
             orderItem.setProductId(cartItem.getProductId());
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setPrice(cartItem.getPrice());
@@ -69,7 +68,9 @@ public class OrderServiceImplement implements OrderService{
         createOrder.setNote(orderRequest.getNote());
         createOrder.setAddress(orderRequest.getAddress());
         createOrder.setPhoneNumber(orderRequest.getPhoneNumber());
-        createOrder.setStatus(OrderStatus.PLACED);
+        createOrder.setStatus(Order.OrderStatus.NEW);
+        createOrder.setStockStatus(Order.OrderStatus.NEW);
+        createOrder.setPaymentStatus(Order.OrderStatus.NEW);
         createOrder.setCreateAt(LocalDateTime.now());
         createOrder.setUpdateStatusAt(LocalDateTime.now());
 
@@ -80,6 +81,7 @@ public class OrderServiceImplement implements OrderService{
 
             orderItemRepository.save(orderItem);
         }
+        //send message to topic product service.
         orderProducer.sendOrderEvent(savedOrder);
 
 
@@ -110,7 +112,7 @@ public class OrderServiceImplement implements OrderService{
 
     @Override
     public Order getOrderById(Long orderId) {
-        return orderRepository.findById(orderId).orElse(null);
+        return orderRepository.findById(orderId).orElseThrow(() -> new OrderException("Order not found"));
     }
     
 }

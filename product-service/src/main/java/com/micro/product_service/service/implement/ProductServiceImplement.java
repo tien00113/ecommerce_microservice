@@ -16,6 +16,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import com.micro.common.models.OrderEvent;
 import com.micro.product_service.dto.ProductDTO;
 import com.micro.product_service.dto.ProductVariantDTO;
 import com.micro.product_service.mapper.ProductMapper;
@@ -50,7 +51,7 @@ public class ProductServiceImplement implements ProductService {
     private ProductVariantRepository productVariantRepository;
 
     @Autowired
-    private KafkaTemplate<String, ProductVariantDTO> kafkaTemplate;
+    private KafkaTemplate<String, OrderEvent> kafkaTemplate;
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
@@ -118,7 +119,17 @@ public class ProductServiceImplement implements ProductService {
     }
 
     @Override
-    public void updateProductQuantity(Long variantId, Long quantity) throws Exception {
+    public void checkProductQuantity(Long variantId, int quantity) throws Exception {
+        ProductVariant existingVariant = productVariantRepository.findById(variantId)
+                .orElseThrow(() -> new Exception("ProductVariant not found"));
+
+        if (existingVariant.getQuantity() < quantity) {
+            throw new Exception("Not enough stock available for ProductVariant ID " + variantId);
+        }
+    }
+
+    @Override
+    public void updateProductQuantity(Long variantId, int quantity) throws Exception {
         ProductVariant existingVariant = productVariantRepository.findById(variantId)
                 .orElseThrow(() -> new Exception("ProductVariant not found"));
 
@@ -141,6 +152,16 @@ public class ProductServiceImplement implements ProductService {
                 .sum();
         product.setStock(totalStock);
         productRepository.save(product);
+    }
+
+    @Override
+    public void rollbackQuantity(Long variantId, int quantity) throws Exception{
+        ProductVariant existingVariant = productVariantRepository.findById(variantId)
+                .orElseThrow(() -> new Exception("ProductVariant not found"));
+
+        existingVariant.setQuantity(quantity);
+
+        productVariantRepository.save(existingVariant);
     }
 
     @Override
@@ -206,7 +227,7 @@ public class ProductServiceImplement implements ProductService {
     }
 
     public void sendProductTopic(ProductVariantDTO productVariantDTO){
-        kafkaTemplate.send(TOPIC, productVariantDTO);
+        // kafkaTemplate.send(TOPIC, productVariantDTO);
     }
 
     @Override

@@ -20,6 +20,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.micro.order_service.config.JwtProvider;
 import com.micro.order_service.dto.ProductDTO;
+import com.micro.order_service.models.Cart;
 import com.micro.order_service.models.CartItem;
 import com.micro.order_service.request.CartItemRequest;
 import com.micro.order_service.service.CartItemService;
@@ -45,7 +46,7 @@ public class CartController {
     @Autowired
     private ProductClient productClient;
 
-    @PostMapping("/publicorder/cart/addtocart")
+    @PostMapping("/public/order/cart/addtocart")
     public ResponseEntity<CartItem> addToCart(@RequestHeader("Authorization") String jwt,
             @RequestBody CartItemRequest cartItemRequest) throws Exception {
         Long userId = JwtProvider.getUserIdFromJwtToken(jwt);
@@ -55,21 +56,27 @@ public class CartController {
         return new ResponseEntity<CartItem>(cartItem, HttpStatus.OK);
     }
 
-    @PutMapping("/privateorder/cart/increase/{cartItemId}")
+    @GetMapping("/public/order/cart")
+    public ResponseEntity<Cart> getUserCart(@RequestHeader("Authorization") String jwt){
+        Long userId = JwtProvider.getUserIdFromJwtToken(jwt);
+        return new ResponseEntity<Cart>(cartService.getUserCart(userId), HttpStatus.OK);
+    }
+
+    @PutMapping("/private/order/cart/increase/{cartItemId}")
     public ResponseEntity<CartItem> increaseQuantity(@PathVariable Long cartItemId) throws Exception{
         CartItem cartItem = cartItemService.increaseQuantity(cartItemId);
 
         return new ResponseEntity<CartItem>(cartItem, HttpStatus.OK);
     }
 
-    @PutMapping("/privateorder/cart/decrease/{cartItemId}")
+    @PutMapping("/private/order/cart/decrease/{cartItemId}")
     public ResponseEntity<CartItem> decreaseQuantity(@PathVariable Long cartItemId) throws Exception{
         CartItem cartItem = cartItemService.decreaseQuantity(cartItemId);
 
         return new ResponseEntity<CartItem>(cartItem, HttpStatus.OK);
     }
 
-    @DeleteMapping("/privateorder/cart/remove/{cartItemId}")
+    @DeleteMapping("/private/order/cart/remove/{cartItemId}")
     public ResponseEntity<String> removeCartItem(@RequestHeader("Authorization") String jwt, @PathVariable Long cartItemId){
         Long userId = JwtProvider.getUserIdFromJwtToken(jwt);
 
@@ -78,7 +85,7 @@ public class CartController {
         return new ResponseEntity<String>(message, HttpStatus.OK);
     }
 
-    @PutMapping("/privateorder/cart/clear")
+    @PutMapping("/private/order/cart/clear")
     public ResponseEntity<String> clearCart(@RequestHeader("Authorization") String jwt){
         Long userId = JwtProvider.getUserIdFromJwtToken(jwt);
 
@@ -89,7 +96,7 @@ public class CartController {
 
     /////////////////////////////HTTP???????????????????/////////////////////////////////////////////////
 
-    @GetMapping("/publicorder/feign/{productId}")
+    @GetMapping("/public/order/feign/{productId}")
     public ProductDTO getProductFeign(@PathVariable Long productId) {
         return productClient.getProduct(productId);
     }

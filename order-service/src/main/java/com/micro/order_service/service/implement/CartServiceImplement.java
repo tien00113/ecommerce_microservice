@@ -62,5 +62,10 @@ public class CartServiceImplement implements CartService{
             return "cart user null: " + userId;
         }
     }
+
+    @Override
+    public Cart getUserCart(Long userId) {
+        return cartRepository.findByUserId(userId);
+    }
     
 }

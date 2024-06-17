@@ -1,50 +1,52 @@
 package com.micro.order_service.service.kafka.producer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import com.micro.common.models.OrderEvent;
+import com.micro.common.models.OrderEvent.OrderStatus;
+import com.micro.common.models.OrderItemEvent;
 import com.micro.order_service.models.Order;
-import com.micro.order_service.models.OrderEvent;
-import com.micro.order_service.models.OrderItem;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
+@Slf4j
 public class OrderProducer {
-    private static final String TOPIC = "order_topics";
+    private static final String ORDER_TOPIC = "order_topic";
+    private static final String PAYMENT_TOPIC = "payment_topic";
 
     @Autowired
     private KafkaTemplate<String, OrderEvent> kafkaTemplate;
 
-    public void sendOrderEvent(Order order) {
-        List<OrderItem> orderItems = order.getOrderItems();
-        Map<Long, Integer> productQuantities = new HashMap<>();
+    public void sendOrderEvent(Order order){
+        OrderEvent orderEvent = convertOrderToOrderEvent(order);
+        // String payload = orderEvent.toString();
+        log.info(orderEvent.toString());
 
-        for (OrderItem orderItem : orderItems) {
-            Long productId = orderItem.getProductId();
-            int quantity = orderItem.getQuantity();
-
-            if (productQuantities.containsKey(productId)) {
-                productQuantities.put(productId, productQuantities.get(productId) + quantity);
-            } else {
-                productQuantities.put(productId, quantity);
-            }
-        }
-
-        kafkaTemplate.send(TOPIC, createAggregateMessage(productQuantities));
+        kafkaTemplate.send(ORDER_TOPIC, orderEvent.getOrderId(), orderEvent);
     }
 
-    private OrderEvent createAggregateMessage(Map<Long, Integer> productQuantities) {
-        List<OrderEvent.OrderItemUpdate> updates = new ArrayList<>();
+    public OrderEvent convertOrderToOrderEvent(Order order) {
+        List<OrderItemEvent> orderItemEvents = order.getOrderItems().stream()
+                .map(item -> new OrderItemEvent(item.getProductId(), item.getQuantity()))
+                .collect(Collectors.toList());
 
-        for (Map.Entry<Long, Integer> entry : productQuantities.entrySet()) {
-            updates.add(new OrderEvent.OrderItemUpdate(entry.getKey(), entry.getValue()));
-        }
+        return new OrderEvent(
+                order.getOrderId(),
+                orderItemEvents,
+                convertOrderStatus(order.getStatus()),
+                convertOrderStatus(order.getStockStatus()),
+                convertOrderStatus(order.getPaymentStatus()),
+                order.getTotalPrice()
+        );
+    }
 
-        return new OrderEvent(updates);
+    public static OrderStatus convertOrderStatus(Order.OrderStatus status) {
+        return OrderStatus.valueOf(status.name());
     }
 }

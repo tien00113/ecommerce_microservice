@@ -19,7 +19,8 @@ public interface ProductClient {
     void updateQuantity(@PathVariable Long variantId,
             @RequestParam Long quantity);
 
-    @GetMapping("/public/product/variant/{id}")
-    ProductVariantDTO getProductVariant(@PathVariable Long id);
+    //Get product variantion information
+    @GetMapping("/public/product/variant/{productVariantId}")
+    ProductVariantDTO getProductVariant(@PathVariable Long productVariantId);
 
 }
