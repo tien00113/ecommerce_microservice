@@ -29,14 +29,9 @@ public class CartItemServiceImplement implements CartItemService {
     @Override
     @Transactional
     public CartItem addToCart(Long userId, CartItemRequest cartItemRequest) throws Exception {
-
-        //update service ProductDTO -> ProductVariant.
-        //////////////////////////////////////////
-
-        // ProductDTO product = productClient.getProduct(cartItemRequest.getProductId());
         ProductVariantDTO product = productClient.getProductVariant(cartItemRequest.getProductId());
 
-        if (product != null) {
+        if (product != null && product.getQuantity() >= cartItemRequest.getQuantity()) {
             Cart existCart = cartRepository.findByUserId(userId);
 
             if (existCart == null) {
@@ -48,7 +43,7 @@ public class CartItemServiceImplement implements CartItemService {
 
             // CartItem existingItem = cartItemRepository.findByCartAndProductIdAndColorAndSizeAndUserId(existCart,
             //         product.getId(), cartItemRequest.getColor(), cartItemRequest.getSize(), userId);
-            CartItem existingItem = cartItemRepository.findByProductId(cartItemRequest.getProductId());
+            CartItem existingItem = cartItemRepository.findByUserIdAndProductId(userId,cartItemRequest.getProductId());
 
             if (existingItem != null) {
                 existingItem.setQuantity(existingItem.getQuantity() + cartItemRequest.getQuantity());
@@ -76,7 +71,7 @@ public class CartItemServiceImplement implements CartItemService {
                 return cartItemRepository.save(newItem);
             }
         } else {
-            throw new Exception("get product failed -----------------------");
+            throw new Exception("get product failed or out of stock");
         }
     }
 

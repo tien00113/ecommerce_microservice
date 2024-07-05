@@ -8,11 +8,18 @@ import com.micro.product_service.models.Product;
 import com.micro.product_service.models.ProductVariant;
 import com.micro.product_service.request.ProductFilterRequest;
 import com.micro.product_service.service.ProductService;
+import com.micro.product_service.service.elasticsearch.ProductSearchService;
+import com.micro.product_service.service.redis.ProductRedisService;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,8 +34,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 public class ProductController {
 
+    private final Logger log = LoggerFactory.getLogger(ProductController.class);
+
     @Autowired
     private ProductService productService;
+
+    @Autowired
+    private ProductRedisService productRedisService;
+
+    @Autowired
+    private ProductSearchService productSearchService;
 
     @GetMapping("/public/product")
     public Page<ProductDTO> getAllProducts(
@@ -39,8 +54,32 @@ public class ProductController {
     @GetMapping("/public/product/{productId}")
     public ResponseEntity<ProductDTO> getProductDetail(@PathVariable Long productId) {
 
-        return new ResponseEntity<ProductDTO>(ProductMapper.toDTO(productService.findProductById(productId)),
-                HttpStatus.OK);
+        String key = "product:_" + productId;
+        ProductDTO productDTO = null;
+
+        try {
+            productDTO = productRedisService.getProductDTO(key);
+            if (productDTO == null) {
+                throw new RuntimeException("ProductDTO is null in Redis");
+            }
+        } catch (Exception e) {
+            // Log the error
+            log.error("Failed to retrieve product from Redis", e);
+
+            // Fetch from database as fallback
+            try {
+                productDTO = ProductMapper.toDTO(productService.findProductById(productId));
+                // productRedisService.setTimout(key, 10, TimeUnit.MINUTES);
+            } catch (Exception ex) {
+                // Log the error
+                log.error("Failed to retrieve product from database", ex);
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        }
+
+        log.info("LOG PRODUCT DETAIL SUCCESSFULLY__________________________________");
+        return new ResponseEntity<>(productDTO, HttpStatus.OK);
+        //  return new ResponseEntity<>(ProductMapper.toDTO(productService.findProductById(productId)), HttpStatus.OK);
     }
 
     @GetMapping("/public/product/variant/{productVariantId}")
@@ -76,7 +115,7 @@ public class ProductController {
         return new ResponseEntity<String>(message, HttpStatus.OK);
     }
 
-    @PutMapping("private/product/{productId}/variants")
+    @PutMapping("/private/product/{productId}/variants")
     public ResponseEntity<List<ProductVariant>> updateProductVariants(
             @PathVariable Long productId,
             @RequestBody List<ProductVariant> productVariants) {
@@ -88,7 +127,7 @@ public class ProductController {
         }
     }
 
-    @PatchMapping("public/product/variants/{variantId}/quantity")
+    @PatchMapping("/public/product/variants/{variantId}/quantity")
     public ResponseEntity<Void> updateProductQuantity(
             @PathVariable Long variantId,
             @RequestParam int quantity) {
@@ -100,11 +139,30 @@ public class ProductController {
         }
     }
 
+    // @PutMapping("/private/product/variants/{variantId}")
+    // public ResponseEntity<ProductVariant> updateQuantity(){
+
+    // }
+
     @PostMapping("/public/test")
     public ResponseEntity<ProductDTO> test(@RequestBody ProductDTO productDTO) {
         // String message = productService.deleteProduct(id);
 
         return new ResponseEntity<ProductDTO>(productDTO, HttpStatus.OK);
+    }
+
+    @GetMapping("/public/product/search")
+    public Page<ProductDTO> searchProduct(@RequestParam String key, @RequestParam int page, @RequestParam int size){
+        Pageable pageable = PageRequest.of(page, size);
+
+        return productService.searchProduct(key, pageable);
+    }
+
+    @GetMapping("/public/product/search/key")
+    public List<ProductDTO> searchProducts(@RequestParam String name){
+
+        List<ProductDTO> list = productSearchService.searchProducts(name);
+        return list;
     }
 
 }

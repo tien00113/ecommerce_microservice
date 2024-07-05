@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.micro.product_service.dto.ProductDTO;
 import com.micro.product_service.dto.ProductVariantDTO;
+import com.micro.product_service.models.Category;
 import com.micro.product_service.models.Product;
 import com.micro.product_service.models.ProductVariant;
 
@@ -41,7 +42,9 @@ public class ProductMapper {
                 colors,
                 product.getActive(),
                 product.getPrice(),
-                variantsDTO);
+                variantsDTO,
+                product.getCreatedAt(),
+                product.getUpdatedAt());
     }
 
     public static Product toEntity(ProductDTO productDTO) {
@@ -52,7 +55,12 @@ public class ProductMapper {
         Product product = new Product();
 
         product.setId(productDTO.getId());
-        // set Category
+        // product.setCategory(null);
+        if (productDTO.getCategoryId() != null) {
+            Category category = new Category();
+            category.setId(productDTO.getCategoryId());
+            product.setCategory(category);
+        }
         product.setStock(productDTO.getStock());
         product.setName(productDTO.getName());
         product.setDescription(productDTO.getDescription());
@@ -97,7 +105,9 @@ public class ProductMapper {
                         variant.getSize(),
                         variant.getQuantity(),
                         variant.getImageUrl(),
-                        productPrice))
+                        productPrice,
+                        variant.getCreatedAt(),
+                        variant.getUpdatedAt()))
                 .collect(Collectors.toList());
     }
 }

@@ -42,7 +42,12 @@ public class OrderProducer {
                 convertOrderStatus(order.getStatus()),
                 convertOrderStatus(order.getStockStatus()),
                 convertOrderStatus(order.getPaymentStatus()),
-                order.getTotalPrice()
+                "",
+                order.getUserId(),
+                order.getTotalPrice(),
+                order.getPaymentMethod(),
+                ""
+                
         );
     }
 

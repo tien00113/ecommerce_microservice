@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: PRODUCT-SERVICE
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://localhost:3306/microservice
+    username: root
+    password: 12345678
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  kafka:
+    bootstrap-servers: localhost:9092
+    streams:
+      bootstrap-servers: localhost:9092
+      properties:
+        spring-json-trusted-packages: "*"
+        processing-guarantee: at_least_once
+      state-dir: /tmp/streams/1
+      cleanup:
+        on-shutdown: true
+  data:
+    elasticsearch:
+      cluster-names: docker-cluster
+      cluster-node: localhost:9200
+      repositories:
+        enabled: true
+      auto-index-creation: true
+  cache:
+    type: redis
+  redis:
+    hostName: localhost
+    time-to-live: 60000
+    cache-null-values: true
+
+server:
+  port: 8082
+
+eureka:
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8888/eureka/
+  instance:
+    prefer-ip-address: true

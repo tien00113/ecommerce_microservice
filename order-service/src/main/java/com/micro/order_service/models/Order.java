@@ -66,6 +66,8 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus paymentStatus;
 
+    private String paymentMethod;
+
     private long totalPrice;
     private String note;
 

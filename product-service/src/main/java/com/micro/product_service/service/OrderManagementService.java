@@ -34,40 +34,23 @@ public class OrderManagementService {
 
                     orderEvent.setStockStatus(OrderEvent.OrderStatus.FAILED);
                     productProducer.sendProductEvent(orderEvent.getOrderId(), orderEvent);
-                    System.out.println("đã xử lý quantity (FAILED) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+                    System.out.println("đã xử lý quantity (FAILED) 1111 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
                     return orderEvent;
                 }
             }
 
-            for (OrderItemEvent item : items) {
-                Long productVariantId = item.getProductVariantId();
-                int quantity = item.getQuantity();
-
-                try {
-                    productService.updateProductQuantity(productVariantId, quantity);
-                } catch (Exception e) {
-                    // Handle any unexpected exceptions during update
-                    orderEvent.setStockStatus(OrderEvent.OrderStatus.FAILED);
-                    productProducer.sendProductEvent(orderEvent.getOrderId(), orderEvent);
-                    System.out.println("đã xử lý quantity (FAILED) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                    return orderEvent;
-                }
-            }
-
-            orderEvent.setStockStatus(OrderStatus.SUCCESS); 
-            productProducer.sendProductEvent(orderEvent.getOrderId(), orderEvent);
-            System.out.println("đã xử lý quantity (SUCCESS)>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+            System.out.println("đã check quantity (SUCCESS) >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
             
-        } else if (orderEvent.getStockStatus() == OrderStatus.ROLLBACK) {
-            for (OrderItemEvent item : items) {
-                productService.rollbackQuantity(item.getProductVariantId(), item.getQuantity());
-            }
-            System.out.println("đã roll back quantity >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-            return orderEvent;
-        }
-
-        System.out.println("đã xử lý quantity >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        } 
+        
+        // else if (orderEvent.getStockStatus() == OrderStatus.ROLLBACK) {
+        //     for (OrderItemEvent item : items) {
+        //         productService.rollbackQuantity(item.getProductVariantId(), item.getQuantity());
+        //     }
+        //     System.out.println("đã roll back quantity >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        //     return orderEvent;
+        // }
 
         return orderEvent;
     }

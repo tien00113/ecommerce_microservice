@@ -3,11 +3,14 @@ package com.micro.order_service.service.implement;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.micro.common.models.OrderItemEvent;
 import com.micro.order_service.exception.OrderException;
 import com.micro.order_service.models.Cart;
 import com.micro.order_service.models.CartItem;
@@ -19,6 +22,7 @@ import com.micro.order_service.repository.OrderItemRepository;
 import com.micro.order_service.repository.OrderRepository;
 import com.micro.order_service.request.OrderRequest;
 import com.micro.order_service.service.OrderService;
+import com.micro.order_service.service.client.PaymentClient;
 import com.micro.order_service.service.client.ProductClient;
 import com.micro.order_service.service.kafka.producer.OrderProducer;
 
@@ -36,6 +40,9 @@ public class OrderServiceImplement implements OrderService{
 
     @Autowired
     private ProductClient productClient;
+
+    @Autowired
+    private PaymentClient paymentClient;
 
     @Autowired
     private OrderProducer orderProducer;
@@ -68,6 +75,7 @@ public class OrderServiceImplement implements OrderService{
         createOrder.setNote(orderRequest.getNote());
         createOrder.setAddress(orderRequest.getAddress());
         createOrder.setPhoneNumber(orderRequest.getPhoneNumber());
+        createOrder.setPaymentMethod(orderRequest.getPaymentMethod());
         createOrder.setStatus(Order.OrderStatus.NEW);
         createOrder.setStockStatus(Order.OrderStatus.NEW);
         createOrder.setPaymentStatus(Order.OrderStatus.NEW);
@@ -81,9 +89,6 @@ public class OrderServiceImplement implements OrderService{
 
             orderItemRepository.save(orderItem);
         }
-        //send message to topic product service.
-        orderProducer.sendOrderEvent(savedOrder);
-
 
         cart.getCartItems().clear();
         cart.setTotalPrice(0);
@@ -113,6 +118,20 @@ public class OrderServiceImplement implements OrderService{
     @Override
     public Order getOrderById(Long orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> new OrderException("Order not found"));
+    }
+
+    @Override
+    public List<OrderItemEvent> getItemsByOrderId(String orderId) {
+        Order order = orderRepository.findByOrderId(orderId);
+        List<OrderItemEvent> orderItemEvents = order.getOrderItems().stream()
+                .map(item -> new OrderItemEvent(item.getProductId(), item.getQuantity()))
+                .collect(Collectors.toList());
+        return orderItemEvents; 
+    }
+
+    @Override
+    public Order getOrderByOrderId(String orderId) {
+        return orderRepository.findByOrderId(orderId);
     }
     
 }

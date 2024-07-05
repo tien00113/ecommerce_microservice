@@ -21,14 +21,15 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
-    private Long orderId;
+    // private Long userId;
+    private String orderId;
 
     private String method;
-    private Long amount;
+    private long amount;
 
-    private String payer;
-    private LocalDateTime createAt;
+    private String code;
+    private LocalDateTime startPayment;
+    private String createAt;
 
     private String status;
 }

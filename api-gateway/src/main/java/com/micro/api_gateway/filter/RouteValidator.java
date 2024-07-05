@@ -12,7 +12,6 @@ public class RouteValidator {
                         "/auth/signup",
                         "/auth/signin",
                         "/public/",
-                        "/publicorder",
                         "/eureka");
 
         public Predicate<ServerHttpRequest> isSecured = request -> openApiEndpoints

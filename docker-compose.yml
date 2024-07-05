@@ -1,0 +1,115 @@
+services:
+  mysql:
+    image: mysql:5.7
+    restart: always
+    container_name: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - 3307:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_USERNAME: ${MYSQL_USER}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    depends_on:
+      - mysql
+      - api-gateway
+      - logstash
+      - elasticsearch
+      - kibana
+  service-discovery:
+    build:
+      context: ./service-discovery
+      dockerfile: Dockerfile
+    container_name: service-discovery
+    ports:
+      - 8888:8888
+    # environment:
+    #   JAVA_OPTS: -Xmx512m -Xms256m
+    #   EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    depends_on:
+      - mysql
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    # environment:
+    #   EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    ports:
+      - 9000:9000
+    depends_on:
+      - mysql
+      - service-discovery
+      - logstash
+      - elasticsearch
+      - kibana
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.1
+    container_name: elasticsearch_microservice
+    environment:
+      - xpack.security.enabled=false
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g -Xmx1g
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    cap_add:
+      - IPC_LOCK
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+  kibana:
+    container_name: kibana_microservice
+    image: docker.elastic.co/kibana/kibana:8.14.1
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 5602:5601
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.14.1
+    container_name: logstash_microservice
+    volumes:
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    ports:
+      - "5044:5044"
+      - "5000:5000/tcp"
+      - "5000:5000/udp"
+      - "9600:9600"
+    environment:
+      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+    depends_on:
+      - elasticsearch
+
+  redis:
+    image: redis:latest
+    container_name: redis_microservice
+    volumes:
+      - ./redis/data:/data
+    ports:
+      - 6379:6379
+volumes:
+  mysql-data:

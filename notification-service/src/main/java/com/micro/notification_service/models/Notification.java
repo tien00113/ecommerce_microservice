@@ -23,5 +23,5 @@ public class Notification {
     
     private String message;
     private String status;  // e.g., PENDING, SENT, FAILED, READ
-    private String type; 
+    private String type;
 }

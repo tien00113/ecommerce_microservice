@@ -1,9 +1,9 @@
 package com.micro.product_service.service.implement;
 
-import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,9 +64,16 @@ public class CategoryServiceImplement implements CategoryService {
             } else {
                 throw new IllegalArgumentException("Parent category ID not found or Level is not support: " + parentId);
             }
+        } else {
+            Category category = new Category();
+            category.setName(name);
+            category.setLevel(level);
+            // category.setParentId();
+
+            return categoryRepository.save(category);
+
         }
 
-        return null;
     }
 
     @Override

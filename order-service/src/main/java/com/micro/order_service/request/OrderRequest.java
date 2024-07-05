@@ -8,4 +8,5 @@ public class OrderRequest {
     private String note;
     private String address;
     private String phoneNumber;
+    private String paymentMethod;
 }

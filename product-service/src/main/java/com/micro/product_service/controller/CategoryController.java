@@ -25,12 +25,12 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    @GetMapping("/category")
+    @GetMapping("/public/category")
     public List<CategoryDTO> getAllCategories() {
         return categoryService.getAllCategory();
     }
 
-    @PostMapping("/category")
+    @PostMapping("/private/category")
     public ResponseEntity<Category> creatCategory(@RequestBody CategoryRequest categoryRequest, @RequestHeader("Authorization") String jwt) throws Exception{
 
         Category createdCategory = categoryService.createCategory(categoryRequest.getName(), categoryRequest.getParentCategoryId());
@@ -38,7 +38,7 @@ public class CategoryController {
         return new ResponseEntity<Category>(createdCategory, HttpStatus.CREATED);
     }
 
-    @PutMapping("/category/{categoryId}")
+    @PutMapping("/private/category/{categoryId}")
     public Category updatCategory(@RequestBody CategoryRequest categoryRequest, @PathVariable Long categoryId) throws Exception{
 
         Category updatedCategory = categoryService.updateCategory(categoryRequest, categoryId);
@@ -46,7 +46,7 @@ public class CategoryController {
         return updatedCategory;
     }
 
-    @DeleteMapping("/category/{categoryId}")
+    @DeleteMapping("/private/category/{categoryId}")
     public String deleteCategory(@PathVariable Long categoryId) throws Exception{
 
         String message = categoryService.deleteCategory(categoryId);
@@ -54,7 +54,7 @@ public class CategoryController {
         return message;
     }
 
-    @GetMapping("/public/getcategory/{categoryId}")
+    @GetMapping("/public/category/{categoryId}")
     public ResponseEntity<Category> getCategoryDetail(@PathVariable Long categoryId) throws Exception{
         return ResponseEntity.ok(categoryService.findCategoryById(categoryId));
     }

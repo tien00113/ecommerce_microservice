@@ -26,8 +26,14 @@ public class OrderEvent {
     @Enumerated(EnumType.STRING)
     private OrderStatus paymentStatus;
 
+    private String email;
+    private Long userId;
 
     private long price;
+
+    private String paymentMethod;
+
+    private String urlPayment;
 
 
     public enum OrderStatus {

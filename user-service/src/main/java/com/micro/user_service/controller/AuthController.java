@@ -2,6 +2,8 @@ package com.micro.user_service.controller;
 
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +35,8 @@ public class AuthController {
 
     @Autowired
     private CustomerUserService customerUserService;
+
+    private final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUser(@RequestBody SignupRequest signupRequest) throws Exception{
@@ -82,6 +86,8 @@ public class AuthController {
         response.setMessage("Login successfully");
         response.setStatus(true);
         response.setJwt(token);
+
+        log.info("LOGIN_LOG SUCCESSFULLY__________________________________");
 
         return new ResponseEntity<AuthResponse>(response, HttpStatus.OK);
     }

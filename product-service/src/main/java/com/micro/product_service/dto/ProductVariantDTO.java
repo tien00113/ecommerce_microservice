@@ -1,5 +1,7 @@
 package com.micro.product_service.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,4 +18,6 @@ public class ProductVariantDTO {
     private int quantity;
     private String imageUrl;
     private long price;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

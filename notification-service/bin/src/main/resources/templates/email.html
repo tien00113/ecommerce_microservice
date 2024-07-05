@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Xác Nhận Đơn Hàng</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border: 1px solid #dddddd;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: #ffffff;
+            padding: 7px 0;
+            text-align: center;
+        }
+        .content {
+            margin: 20px 0;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            color: #555555;
+            padding: 2px 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        .order-details {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        .order-details th, .order-details td {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+        .order-details th {
+            background-color: #f2f2f2;
+        }
+        span {
+            color: #f95230;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="content">
+            <p>Xin chào bạn,</p>
+            <p>Cảm ơn bạn đã mua hàng! Chúng tôi đã xác nhận đơn hàng của bạn.</p>
+            <p>Mã Đơn Hàng: <span>{orderId}</span></p> 
+            <p>Tổng Giá: {totalPrice}</p>
+            <p>Thời Gian: {paymentTime}</p>
+            <p>Nếu bạn có bất kỳ câu hỏi nào về đơn hàng, vui lòng <a href="mailto:nht010103@gmail.com">liên hệ với chúng tôi</a>.</p>
+            <p>Cảm ơn bạn đã mua sắm với chúng tôi!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; Công Ty TNHH T-Shop.</p>
+        </div>
+    </div>
+</body>
+</html>

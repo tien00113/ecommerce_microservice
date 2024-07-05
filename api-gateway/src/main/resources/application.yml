@@ -14,7 +14,7 @@ spring:
         - id: PRODUCT-SERVICE
           uri: lb://PRODUCT-SERVICE
           predicates:
-            - Path= /private/product/**, /public/product/**
+            - Path= /private/product/**, /public/product/**, /public/category/**, /private/category/**
           filters:
           - AuthenFilter
         - id: ORDER-SERVICE
@@ -26,7 +26,7 @@ spring:
         - id: PAYMENT-SERVICE
           uri: lb://PAYMENT-SERVICE
           predicates:
-          - Path= /payment/**
+          - Path= /public/payment/**
           filters:
           - AuthenFilter
         - id: NOTIFICATION-SERVICE
@@ -50,6 +50,6 @@ eureka:
     fetch-registry: true
     register-with-eureka: true
     service-url:
-      defaultZone: http://localhost:8888/eureka/
+      defaultZone: http://discovery:8888/eureka/
   instance:
     prefer-ip-address: true

@@ -1,5 +1,7 @@
 package com.micro.product_service.models;
 
+import java.time.LocalDateTime;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Entity;
@@ -33,6 +35,10 @@ public class ProductVariant {
     private long price;
     private int quantity;
     private String imageUrl;
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
     
 }
 

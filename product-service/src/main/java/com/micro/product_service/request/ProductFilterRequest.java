@@ -24,7 +24,9 @@ public class ProductFilterRequest {
     public class PageableDTO {
         private int size;
         private int page;
-        private List<SortDTO> sort;
+        // private List<SortDTO> sort;
+         private SortDTO sort;
+
 
 
         @Getter

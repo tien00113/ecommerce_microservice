@@ -3,6 +3,7 @@ package com.micro.product_service.service;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.micro.product_service.dto.ProductDTO;
 import com.micro.product_service.models.Product;
@@ -21,7 +22,7 @@ public interface ProductService {
 
     public List<ProductVariant> updateProuductVariants(Long productId, List<ProductVariant> productVariants) throws Exception;
 
-    public void updateProductQuantity(Long variantId, int quantity) throws Exception;
+    public int updateProductQuantity(Long variantId, int quantity) throws Exception;
     
     public String deleteProduct(Long productId);
 
@@ -34,4 +35,6 @@ public interface ProductService {
     public Page<ProductDTO> getAllFilter(ProductFilterRequest productFilterRequest);
 
     public void updateProductStock(Product product);
+
+    public Page<ProductDTO> searchProduct(String key, Pageable pageable);
 }
