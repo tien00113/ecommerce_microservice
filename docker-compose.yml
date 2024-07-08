@@ -1,62 +1,109 @@
 services:
   mysql:
-    image: mysql:5.7
-    restart: always
+    image: mysql:8.0.36
+    restart: unless-stopped
     container_name: mysql
     command: --default-authentication-plugin=mysql_native_password
+    env_file: ./.env
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-    ports:
-      - 3307:3306
+      - MYSQL_ROOT_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - MYSQL_DATABASE=$MYSQLDB_DATABASE
+    # ports:
+    #   - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
     volumes:
       - mysql-data:/var/lib/mysql
       - ./mysql:/docker-entrypoint-initdb.d
+    networks:
+      - backend_nw
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -p$${MYSQL_ROOT_PASSWORD} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   user-service:
     build:
       context: ./user-service
       dockerfile: Dockerfile
     container_name: user-service
+    # ports:
+    #   - 8081:8081
     environment:
-      DATABASE_URL: ${DATABASE_URL}
-      DATABASE_USERNAME: ${MYSQL_USER}
-      DATABASE_PASSWORD: ${MYSQL_PASSWORD}
-      EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+      - DB_HOST=mysql
+      - DB_USER=$MYSQLDB_USER
+      - DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - DB_NAME=$MYSQLDB_DATABASE
+      - DB_PORT=$MYSQLDB_DOCKER_PORT
+      - EUREKA_URL=$EUREKA_SERVER_URL
+      - LOG_STASH=$LOG_HOST
     depends_on:
-      - mysql
-      - api-gateway
-      - logstash
-      - elasticsearch
-      - kibana
+      # - mysql
+      # - api-gateway
+      # - logstash
+      # - elasticsearch
+      # - kibana
+      mysql:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
+      logstash:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+    networks:
+      - backend_nw
   service-discovery:
     build:
       context: ./service-discovery
       dockerfile: Dockerfile
     container_name: service-discovery
-    ports:
-      - 8888:8888
-    # environment:
-    #   JAVA_OPTS: -Xmx512m -Xms256m
-    #   EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    # ports:
+    #   - 8888:8888
+    environment:
+      EUREKA_URL: ${EUREKA_SERVER_URL}
     depends_on:
       - mysql
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8888/actuator/health || exit 1"]
+      # test: ["CMD-SHELL", "sleep 10 && curl -f http://localhost:8888/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - backend_nw
   api-gateway:
     build:
       context: ./api-gateway
       dockerfile: Dockerfile
     container_name: api-gateway
-    # environment:
-    #   EUREKA_SERVER_URL: ${EUREKA_SERVER_URL}
+    environment:
+      EUREKA_URL: ${EUREKA_SERVER_URL}
     ports:
       - 9000:9000
     depends_on:
-      - mysql
-      - service-discovery
-      - logstash
-      - elasticsearch
-      - kibana
+      # - mysql
+      # - service-discovery
+      # - logstash
+      # - elasticsearch
+      # - kibana
+      mysql:
+        condition: service_healthy
+      service-discovery:
+        condition: service_healthy
+      logstash:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+    networks:
+      - backend_nw
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9000/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.14.1
     container_name: elasticsearch_microservice
@@ -78,6 +125,13 @@ services:
     ports:
       - 9200:9200
       - 9300:9300
+    networks:
+      - backend_nw
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
   kibana:
     container_name: kibana_microservice
     image: docker.elastic.co/kibana/kibana:8.14.1
@@ -86,7 +140,16 @@ services:
     ports:
       - 5602:5601
     depends_on:
-      - elasticsearch
+      # - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - backend_nw
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   logstash:
     image: docker.elastic.co/logstash/logstash:8.14.1
@@ -101,8 +164,18 @@ services:
       - "9600:9600"
     environment:
       LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+      LOG_HOST: ${LOG_HOST}
     depends_on:
-      - elasticsearch
+      # - elasticsearch
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - backend_nw
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   redis:
     image: redis:latest
@@ -111,5 +184,15 @@ services:
       - ./redis/data:/data
     ports:
       - 6379:6379
+    networks:
+      - backend_nw
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 volumes:
   mysql-data:
+networks:
+  backend_nw:
+    driver: bridge

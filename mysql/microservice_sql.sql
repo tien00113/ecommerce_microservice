@@ -48,7 +48,7 @@ UNLOCK TABLES;
 DROP TABLE IF EXISTS `cart_item`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `cart_item` (
+CREATE TABLE `cart_item` (  
   `id` bigint NOT NULL AUTO_INCREMENT,
   `price` bigint NOT NULL,
   `product_id` bigint DEFAULT NULL,

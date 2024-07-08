@@ -1,0 +1,9 @@
+/mysql
+/.env
+/elasticsearch
+/logsash
+/redis
+/api-gateway/src/resources
+/service-discovery/src/resources
+/user-service/src/resources
+/product-service/src/resources
