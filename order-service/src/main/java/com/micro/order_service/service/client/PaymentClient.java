@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.micro.common.models.PaymentRequest;
 
-@FeignClient(name = "paymentClient", url = "http://localhost:8083")
+@FeignClient(name = "paymentClient", url = "${url.payment}")
 public interface PaymentClient {
     @PostMapping("/public/payment/submit")
     PaymentRequest getUrlPayment(@RequestBody PaymentRequest request);

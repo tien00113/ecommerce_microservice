@@ -1,6 +1,5 @@
 package com.micro.product_service.service.implement;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -15,12 +14,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.micro.common.models.OrderEvent;
 import com.micro.product_service.dto.ProductDTO;
 import com.micro.product_service.mapper.ProductMapper;
 import com.micro.product_service.models.Category;
@@ -35,16 +31,14 @@ import com.micro.product_service.repository.ProductVariantRepository;
 import com.micro.product_service.request.ProductFilterRequest;
 import com.micro.product_service.service.CategoryService;
 import com.micro.product_service.service.ProductService;
-import com.micro.product_service.service.redis.ProductRedisService;
+import com.micro.product_service.service.redis.CacheService;
 
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.MapJoin;
 
 @Service
 public class ProductServiceImplement implements ProductService {
-
-    private static final String TOPIC = "product_topic";
-
+    
     @Autowired
     private ProductRepo productRepository;
 
@@ -61,7 +55,7 @@ public class ProductServiceImplement implements ProductService {
     private ProcessRepository processRepository;
 
     @Autowired
-    private ProductRedisService productRedisService;
+    private CacheService cacheService;
 
     @Autowired
     private ProductElasticsearchRepository productElasticsearchRepository;
@@ -80,6 +74,7 @@ public class ProductServiceImplement implements ProductService {
         product.setUpdatedAt(LocalDateTime.now());
         if (product.getVariants() != null) {
             product.getVariants().forEach(variant -> {
+                variant.setName(product.getName());
                 variant.setCreatedAt(LocalDateTime.now());
                 variant.setUpdatedAt(LocalDateTime.now());
             });
@@ -89,7 +84,7 @@ public class ProductServiceImplement implements ProductService {
 
         String key = "product:_" + createdProduct.getId();
         ProductDTO productDTO2 = ProductMapper.toDTO(createdProduct);
-        productRedisService.setValue(key, productDTO2);
+        cacheService.setValue(key, productDTO2);
 
         productDTO2.setCreatedAt(null);
         productDTO2.setUpdatedAt(null);
@@ -123,7 +118,7 @@ public class ProductServiceImplement implements ProductService {
                     .orElseThrow(() -> new Exception("Category not found"));
             String key = "product:category:_" + existingProduct.getCategory().getId();
 
-            productRedisService.removeValueFromSet(key, existingProduct.getId());
+            cacheService.removeValueFromSet(key, existingProduct.getId());
 
             existingProduct.setCategory(newCategory);
         }
@@ -156,6 +151,7 @@ public class ProductServiceImplement implements ProductService {
             if (newVariant.getId() != null && existingVariantMap.containsKey(newVariant.getId())) {
 
                 ProductVariant existingVariant = existingVariantMap.get(newVariant.getId());
+                existingVariant.setName(newVariant.getName());
                 existingVariant.setColor(newVariant.getColor());
                 existingVariant.setSize(newVariant.getSize());
                 existingVariant.setQuantity(newVariant.getQuantity());
@@ -261,11 +257,11 @@ public class ProductServiceImplement implements ProductService {
     public Page<ProductDTO> getAllFilter(ProductFilterRequest productFilterRequest) {
         Specification<Product> specification = Specification.where(null);
 
-        if (productFilterRequest.getMinPrice() != 0) {
+        if (productFilterRequest.getMinPrice() != null && productFilterRequest.getMinPrice() != 0) {
             specification = specification.and((root, query, criteriaBuilder) -> criteriaBuilder
                     .greaterThanOrEqualTo(root.get("price"), productFilterRequest.getMinPrice()));
         }
-        if (productFilterRequest.getMaxPrice() != 0) {
+        if (productFilterRequest.getMaxPrice() != null && productFilterRequest.getMinPrice() != 0) {
             specification = specification.and((root, query, criteriaBuilder) -> criteriaBuilder
                     .lessThanOrEqualTo(root.get("price"), productFilterRequest.getMaxPrice()));
         }

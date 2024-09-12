@@ -1,5 +1,6 @@
 {
     "configurations": [
+        
         {
             "type": "java",
             "name": "Spring Boot-ServiceDiscoveryApplication<service-discovery>",
@@ -83,6 +84,17 @@
             "projectName": "common",
             "args": "",
             "envFile": "${workspaceFolder}/.env"
+        },
+        {
+            "type": "java",
+            "name": "Spring Boot-RecommendSystemApplication<recommend-system>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.micro.recommend_system.RecommendSystemApplication",
+            "projectName": "recommend-system",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "vmArgs": "--add-exports java.base/sun.nio.ch=ALL-UNNAMED"
         }
     ]
 }

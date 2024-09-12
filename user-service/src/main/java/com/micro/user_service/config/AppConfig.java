@@ -44,7 +44,7 @@ public class AppConfig {
 
                 CorsConfiguration cfg = new CorsConfiguration();
 
-                cfg.setAllowedOrigins(Collections.singletonList("*"));
+                cfg.setAllowedOrigins(Arrays.asList("http://localhost:4200/", "http://localhost:6800/"));
                 cfg.setAllowedMethods(Collections.singletonList("*"));
                 cfg.setAllowCredentials(true);
                 cfg.setAllowedHeaders(Collections.singletonList("*"));

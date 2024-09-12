@@ -16,5 +16,5 @@ public class ProductProducer {
     public void sendProductEvent(String key, OrderEvent event) {
         kafkaTemplate.send(TOPIC, key, event);
     }
-
+    
 }

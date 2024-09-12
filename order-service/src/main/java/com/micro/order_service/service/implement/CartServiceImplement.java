@@ -51,9 +51,11 @@ public class CartServiceImplement implements CartService{
                     .orElse(null);
 
             if (itemToRemove != null) {
+                cart.setTotalPrice(cart.getTotalPrice() - itemToRemove.getPrice());
                 cartItems.remove(itemToRemove);
 
                 cartItemRepository.delete(itemToRemove);
+                cartRepository.save(cart);
                 return "remove cart item successfully";
             } else {
                 return "not found cart item id: " + cartItemId;

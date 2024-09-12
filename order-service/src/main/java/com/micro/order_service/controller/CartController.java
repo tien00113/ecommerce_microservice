@@ -49,7 +49,7 @@ public class CartController {
     @Autowired
     private ProductClient productClient;
 
-    @PostMapping("/public/order/cart/addtocart")
+    @PostMapping("/private/order/cart/addtocart")
     public ResponseEntity<CartItem> addToCart(@RequestHeader("Authorization") String jwt,
             @RequestBody CartItemRequest cartItemRequest) throws Exception {
         Long userId = JwtProvider.getUserIdFromJwtToken(jwt);
@@ -61,7 +61,7 @@ public class CartController {
         return new ResponseEntity<CartItem>(cartItem, HttpStatus.OK);
     }
 
-    @GetMapping("/public/order/cart")
+    @GetMapping("/private/order/cart")
     public ResponseEntity<Cart> getUserCart(@RequestHeader("Authorization") String jwt){
         Long userId = JwtProvider.getUserIdFromJwtToken(jwt);
         return new ResponseEntity<Cart>(cartService.getUserCart(userId), HttpStatus.OK);

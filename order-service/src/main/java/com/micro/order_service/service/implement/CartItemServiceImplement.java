@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.micro.order_service.dto.ProductDTO;
 import com.micro.order_service.dto.ProductVariantDTO;
 import com.micro.order_service.models.Cart;
 import com.micro.order_service.models.CartItem;
@@ -41,8 +40,6 @@ public class CartItemServiceImplement implements CartItemService {
                 existCart = cartRepository.save(existCart);
             }
 
-            // CartItem existingItem = cartItemRepository.findByCartAndProductIdAndColorAndSizeAndUserId(existCart,
-            //         product.getId(), cartItemRequest.getColor(), cartItemRequest.getSize(), userId);
             CartItem existingItem = cartItemRepository.findByUserIdAndProductId(userId,cartItemRequest.getProductId());
 
             if (existingItem != null) {

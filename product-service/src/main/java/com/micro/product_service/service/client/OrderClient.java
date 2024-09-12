@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.micro.common.models.OrderItemEvent;
 
-@FeignClient(name = "orderClient", url = "http://localhost:8084")
+@FeignClient(name = "orderClient", url = "${url.order}")
 public interface OrderClient {
     @GetMapping("/public/order/items/{orderId}")
     List<OrderItemEvent> getItemEvents(@PathVariable String orderId);

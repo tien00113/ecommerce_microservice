@@ -4,15 +4,22 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+    show-sql: true
   datasource:
+    # url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:microservice}?useSSL=false&serverTimezone=UTC
+    # username: ${DB_USER:root}
+    # password: ${DB_PASSWORD:12345678}
     url: jdbc:mysql://localhost:3306/microservice
     username: root
     password: 12345678
     driver-class-name: com.mysql.cj.jdbc.Driver
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: ${KAFKA_HOSTS:localhost}:9092
     streams:
-      bootstrap-servers: localhost:9092
+      bootstrap-servers: ${KAFKA_HOSTS:localhost}:9092
       properties:
         spring-json-trusted-packages: "*"
         processing-guarantee: at_least_once
@@ -22,33 +29,31 @@ spring:
   data:
     elasticsearch:
       cluster-names: docker-cluster
-      cluster-node: localhost:9200
+      cluster-node: ${ELASTICSEARCH_HOSTS:localhost}:9200
       repositories:
         enabled: true
       auto-index-creation: true
+      
     redis:
       port: 6379
-      host: localhost
-      time-to-live: 60000
+      host: ${REDIS_HOST:localhost}
+      timeout: 60000
       cache-null-values: true
   elasticsearch:
     uris:
-    - http://localhost:9200
+    - ${ELASTICSEARCH_HOSTS:http://localhost}:9200
   cache:
     type: redis
-  
   main:
     allow-bean-definition-overriding: true
-
 server:
   port: 8082
-
 eureka:
   client:
     fetch-registry: true
     register-with-eureka: true
     service-url:
-      defaultZone: http://localhost:8888/eureka/
+      defaultZone: ${EUREKA_URL:http://localhost:8888/eureka/}
   instance:
     prefer-ip-address: true
 logging: 
@@ -57,3 +62,5 @@ logging:
     server: localhost:5000
   file: 
     path: C:/devops
+url:
+  order: ${ORDER_SERVICE_URL:http://localhost:8084}

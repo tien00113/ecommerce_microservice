@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.springframework.data.elasticsearch.annotations.Document;
 
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -14,6 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Document(indexName = "products")
 public class ProductDTO {
+    @Id
     private Long id;
     private Long categoryId;
     private String name;

@@ -21,9 +21,10 @@ services:
       timeout: 10s
       retries: 5
   user-service:
-    build:
-      context: ./user-service
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./user-service
+    #   dockerfile: Dockerfile
+    image: tien00113/user-service:1.0
     container_name: user-service
     # ports:
     #   - 8081:8081
@@ -36,11 +37,6 @@ services:
       - EUREKA_URL=$EUREKA_SERVER_URL
       - LOG_STASH=$LOG_HOST
     depends_on:
-      # - mysql
-      # - api-gateway
-      # - logstash
-      # - elasticsearch
-      # - kibana
       mysql:
         condition: service_healthy
       api-gateway:
@@ -53,10 +49,109 @@ services:
         condition: service_started
     networks:
       - backend_nw
+  product-service:
+    # build:
+    #   context: ./product-service
+    #   dockerfile: Dockerfile
+    image: tien00113/product-service:1.0
+    container_name: product-service
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=$MYSQLDB_USER
+      - DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - DB_NAME=$MYSQLDB_DATABASE
+      - DB_PORT=$MYSQLDB_DOCKER_PORT
+      - EUREKA_URL=$EUREKA_SERVER_URL
+      - LOG_STASH=$LOG_HOST
+      - ELASTICSEARCH_HOSTS=elasticsearch
+      - KAFKA_HOSTS=kafka
+      - PRODUCT_SERVICE_URL=http://product-service:8082
+      - ORDER_SERVICE_URL=http://order-service:8084
+      - REDIS_HOST=redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
+      logstash:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - backend_nw
+  order-service:
+    # build:
+    #   context: ./order-service
+    #   dockerfile: Dockerfile
+    image: tien00113/order-service:1.0
+    container_name: order-service
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=$MYSQLDB_USER
+      - DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - DB_NAME=$MYSQLDB_DATABASE
+      - DB_PORT=$MYSQLDB_DOCKER_PORT
+      - EUREKA_URL=$EUREKA_SERVER_URL
+      - LOG_STASH=$LOG_HOST
+      - ELASTICSEARCH_HOSTS=elasticsearch
+      - KAFKA_HOSTS=kafka
+      - PRODUCT_SERVICE_URL=http://product-service:8082
+      - PAYMENT_SERVICE_URL=http://payment-service:8083
+    depends_on:
+      mysql:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
+      logstash:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - backend_nw
+  payment-service:
+    # build:
+    #   context: ./payment-service
+    #   dockerfile: Dockerfile
+    image: tien00113/payment-service:1.0
+    container_name: payment-service
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=$MYSQLDB_USER
+      - DB_PASSWORD=$MYSQLDB_ROOT_PASSWORD
+      - DB_NAME=$MYSQLDB_DATABASE
+      - DB_PORT=$MYSQLDB_DOCKER_PORT
+      - EUREKA_URL=$EUREKA_SERVER_URL
+      - LOG_STASH=$LOG_HOST
+      - KAFKA_HOSTS=kafka
+      - PRODUCT_SERVICE_URL=http://product-service:8082
+    depends_on:
+      mysql:
+        condition: service_healthy
+      api-gateway:
+        condition: service_started
+      logstash:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+      kibana:
+        condition: service_started
+      kafka:
+        condition: service_started
+    networks:
+      - backend_nw
   service-discovery:
-    build:
-      context: ./service-discovery
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./service-discovery
+    #   dockerfile: Dockerfile
+    image: tien00113/discovery:1.0
     container_name: service-discovery
     # ports:
     #   - 8888:8888
@@ -66,16 +161,16 @@ services:
       - mysql
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8888/actuator/health || exit 1"]
-      # test: ["CMD-SHELL", "sleep 10 && curl -f http://localhost:8888/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
     networks:
       - backend_nw
   api-gateway:
-    build:
-      context: ./api-gateway
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./api-gateway
+    #   dockerfile: Dockerfile
+    image: tien00113/api-gateway:1.0
     container_name: api-gateway
     environment:
       EUREKA_URL: ${EUREKA_SERVER_URL}
@@ -111,6 +206,7 @@ services:
       - xpack.security.enabled=false
       - discovery.type=single-node
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ELASTICSEARCH_HOSTS=elasticsearch
     ulimits:
       memlock:
         soft: -1
@@ -176,7 +272,35 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-
+  kafka:
+    image: bitnami/kafka:3.7.0
+    container_name: kafka_microservice
+    ports:
+      - 9092:9092
+      - 9093:9093
+      - 9094:9094
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_METADATA_LOG_DIR=/bitnami/kafka/data
+      - KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR=1
+    volumes:
+      - ./kafka/data:/bitnami/kafka
+    networks:
+      - backend_nw
+    # healthcheck:
+    #   test: ["CMD-SHELL", "echo 'test-message' | kafka-console-producer.sh --broker-list localhost:9092 --topic health-check-topic && kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic health-check-topic --from-beginning --max-messages 1 | grep 'test-message'"]
+    #   interval: 15s
+    #   timeout: 10s
+    #   retries: 3
   redis:
     image: redis:latest
     container_name: redis_microservice
@@ -184,6 +308,8 @@ services:
       - ./redis/data:/data
     ports:
       - 6379:6379
+    environment:
+      - REDIS_HOST=redis
     networks:
       - backend_nw
     healthcheck:
@@ -196,3 +322,5 @@ volumes:
 networks:
   backend_nw:
     driver: bridge
+  backend_nw2:
+    driver: local

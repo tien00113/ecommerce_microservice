@@ -3,6 +3,7 @@ package com.micro.payment_service.config;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,5 +39,10 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, OrderEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
+    }
+
+    @Bean
+    public NewTopic productTopic() {
+        return new NewTopic("payment_topic", 1, (short) 1);
     }
 }

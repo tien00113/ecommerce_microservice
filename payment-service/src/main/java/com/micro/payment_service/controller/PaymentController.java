@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 
 import com.micro.common.models.PaymentRequest;
 import com.micro.payment_service.config.VnPayRefund;
@@ -33,12 +34,25 @@ public class PaymentController {
         return new ResponseEntity<PaymentRequest>(response, HttpStatus.OK);
     }
 
-    @GetMapping("/public/payment/vnpay-payment")
-    public Map<String, String> getPaymentStatus(HttpServletRequest request) {
+    // @GetMapping("/public/payment/vnpay-payment")
+    // public Map<String, String> getPaymentStatus(HttpServletRequest request) {
         
+    //     Map<String, String> response = paymentService.paymentReturn(request);
+
+    //     return response;
+    // }
+
+    @GetMapping("/public/payment/vnpay-payment")
+    public RedirectView paymentReturn(HttpServletRequest request) {
         Map<String, String> response = paymentService.paymentReturn(request);
 
-        return response;
+        StringBuilder redirectUrl = new StringBuilder("http://localhost:6800/payment-result");
+        redirectUrl.append("?");
+        response.forEach((key, value) -> redirectUrl.append(key).append("=").append(value).append("&"));
+
+        redirectUrl.deleteCharAt(redirectUrl.length() - 1);
+
+        return new RedirectView(redirectUrl.toString());
     }
 
     @GetMapping("/public/payment/refund")

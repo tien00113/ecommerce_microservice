@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.micro.order_service.dto.ProductDTO;
 import com.micro.order_service.dto.ProductVariantDTO;
 
-@FeignClient(name = "productClient", url = "http://localhost:8082")
+@FeignClient(name = "productClient", url = "${url.product}")
 public interface ProductClient {
 
     @GetMapping("/public/product/{productId}")

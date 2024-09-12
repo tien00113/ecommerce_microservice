@@ -4,14 +4,19 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.micro.product_service.dto.ProductDTO;
 import com.micro.product_service.mapper.ProductMapper;
+import com.micro.product_service.models.Interaction;
 import com.micro.product_service.models.Product;
 import com.micro.product_service.models.ProductVariant;
+import com.micro.product_service.repository.InteractionRepository;
 import com.micro.product_service.request.ProductFilterRequest;
 import com.micro.product_service.service.ProductService;
 import com.micro.product_service.service.elasticsearch.ProductSearchService;
+import com.micro.product_service.service.redis.CacheService;
 import com.micro.product_service.service.redis.ProductRedisService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -30,6 +35,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @RestController
 public class ProductController {
@@ -43,12 +49,25 @@ public class ProductController {
     private ProductRedisService productRedisService;
 
     @Autowired
+    private CacheService cacheService;
+
+    @Autowired
     private ProductSearchService productSearchService;
 
     @GetMapping("/public/product")
     public Page<ProductDTO> getAllProducts(
-            @RequestBody ProductFilterRequest productFilterRequest) {
-        return productService.getAllFilter(productFilterRequest);
+            @RequestParam(required = false) Integer minPrice,
+            @RequestParam(required = false) Integer maxPrice,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String color,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "16") int size,
+            @RequestParam(defaultValue = "id") String sortProperty,
+            @RequestParam(defaultValue = "ASC") String sortDirection) {
+        ProductFilterRequest filterRequest = new ProductFilterRequest(minPrice, maxPrice, categoryId, color,
+                new ProductFilterRequest.PageableDTO(size, page,
+                        new ProductFilterRequest.PageableDTO.SortDTO(sortProperty, sortDirection)));
+        return productService.getAllFilter(filterRequest);
     }
 
     @GetMapping("/public/product/{productId}")
@@ -78,15 +97,21 @@ public class ProductController {
         }
 
         log.info("LOG PRODUCT DETAIL SUCCESSFULLY__________________________________");
+        // Interaction interaction = new Interaction();
+        // interaction.setProduct(ProductMapper.toEntity(productDTO));
+        // interaction.setUserId(2L);
+        // interaction.setRating(4);
         return new ResponseEntity<>(productDTO, HttpStatus.OK);
-        //  return new ResponseEntity<>(ProductMapper.toDTO(productService.findProductById(productId)), HttpStatus.OK);
+        // return new
+        // ResponseEntity<>(ProductMapper.toDTO(productService.findProductById(productId)),
+        // HttpStatus.OK);
     }
 
     @GetMapping("/public/product/variant/{productVariantId}")
-    public ResponseEntity<ProductVariant> getProductVariant(@PathVariable Long productVariantId) throws Exception{
-        
+    public ResponseEntity<ProductVariant> getProductVariant(@PathVariable Long productVariantId) throws Exception {
+
         return new ResponseEntity<ProductVariant>(productService.findProductVariant(productVariantId), HttpStatus.OK);
-    } 
+    }
 
     @PostMapping("/private/product")
     public ResponseEntity<?> createProduct(@RequestBody ProductDTO productDTO) {
@@ -152,17 +177,37 @@ public class ProductController {
     }
 
     @GetMapping("/public/product/search")
-    public Page<ProductDTO> searchProduct(@RequestParam String key, @RequestParam int page, @RequestParam int size){
+    public Page<ProductDTO> searchProduct(@RequestParam String key, @RequestParam int page, @RequestParam int size) {
         Pageable pageable = PageRequest.of(page, size);
 
         return productService.searchProduct(key, pageable);
     }
 
     @GetMapping("/public/product/search/key")
-    public List<ProductDTO> searchProducts(@RequestParam String name){
+    public List<ProductDTO> searchProducts(@RequestParam String name) {
 
         List<ProductDTO> list = productSearchService.searchProducts(name);
         return list;
     }
 
+    @GetMapping("/public/product/related")
+    public List<ProductDTO> getRelatedProduct() {
+        Set<Object> lists = cacheService.getRandomMembers("product:category:_1", 6);
+        List<ProductDTO> listRelated = new ArrayList<>();
+
+        for (Object object : lists) {
+            String key = "product:_" + object;
+            ProductDTO productDTO = productRedisService.getProductDTO(key);
+            listRelated.add(productDTO);
+        }
+        return listRelated;
+
+    }
+
+    @GetMapping("/public/product/scan")
+    public String testScan() {
+        productRedisService.scanFullProducts();
+
+        return "thành công";
+    }
 }
